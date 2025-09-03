@@ -73,6 +73,22 @@ app.get("/get-id-cookie", (req, res)=>{
   res.status(200).json({ message: "Id retrieved from cookie", id });
 })
 
+
+app.get("/set-test", (req, res) => {
+  res.cookie("mobileTest", "helloMobile", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/",
+  });
+  res.json({ message: "cookie set" });
+});
+
+app.get("/get-test", (req, res) => {
+  res.json({ cookies: req.cookies });
+});
+
+
 app.get("/get-user", (req, res) => {
   const userCookie = req.cookies.user;
   
