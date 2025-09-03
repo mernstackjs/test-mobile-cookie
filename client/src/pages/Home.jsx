@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 export default function Home() {
   const [data, setData] = useState(null)
@@ -13,7 +13,11 @@ export default function Home() {
 
     setData(data)
   }
-  testData()
+
+
+  useEffect(() => {
+    testData()
+  },[])
   return (
     <div>
       <h1 className='text-2xl font-bold'>Home</h1>
