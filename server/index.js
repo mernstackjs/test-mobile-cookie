@@ -8,9 +8,9 @@ const port = process.env.PORT
 
 app.use(cors({
   origin: process.env.CLIENT_URL || "http://localhost:5173",
-  credentials: true,
+  credentials: true, // allow cookies
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -23,47 +23,50 @@ app.get('/', (req, res) => {
 
 
 app.post("/set-user", (req, res) => {
-try {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    // Generate user object
+    const user = {
+      id: Math.random().toString(36).substring(2, 15),
+      email,
+      password,
+      createdAt: new Date().toISOString(),
+      role: "user",
+    };
+
+    // Set cookie with cross-domain + mobile-friendly settings
+    res.cookie("user", JSON.stringify(user), {
+      httpOnly: true,            // ✅ safer + consistent on mobile
+      secure: true,              // ✅ required for HTTPS
+      sameSite: "none",          // ✅ required for cross-site cookies
+      domain: ".onrender.com",   // ✅ share cookie across client + server
+      path: "/",                 // ✅ required for Safari
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    res.status(201).json({ message: "User stored in cookie", user });
+  } catch (error) {
+    res.status(500).json({ message: "server error", error: error.message });
   }
-
-  // Generate user object
-  const user = {
-    id: Math.random().toString(36).substring(2, 15),
-    email,
-    password,
-    createdAt: new Date().toISOString(),
-    role: "user",
-  };
-
-  // Set cookie with mobile-friendly settings
-  res.cookie("user", JSON.stringify(user), {
-    httpOnly: false, // allow client-side JS to read it
-    secure: true,    // required on HTTPS
-    sameSite: "none", // required for cross-site cookies
-    maxAge: 24 * 60 * 60 * 1000,
-    path: "/",
-  });
-  
-
-  res.status(201).json({ message: "User stored in cookie", user });
-
-} catch (error) {
-  res.status(500).json({ message: "server error", error:error.message })
-}
 });
 
 app.post("/set-id-cookie", (req, res)=>{
   const { id } = req.body;
-  res.cookie("idahmed", id, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
 
-  })
+  res.cookie("idahmed", id, {
+    httpOnly: true,              // prevent JS access (good for security)
+    secure: true,                // HTTPS only
+    sameSite: "none",            // required for cross-site cookies
+    domain: ".onrender.com",     // ✅ make cookie valid across client + server
+    path: "/",                   // ✅ required for Safari
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+  });
+  
   res.status(201).json({ message: "Id stored in cookie", id });
 })
 
