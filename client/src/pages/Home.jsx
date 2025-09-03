@@ -4,6 +4,7 @@ export default function Home() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [userCookie, setUserCookie] = useState(null)
+  const [cookieData, setCookieData] = useState(null);
 
   const [userLocalStorage, setUserLocalStorage] = useState(()=>{
     const user = localStorage.getItem("user")
@@ -86,9 +87,43 @@ try {
     fetchUserLocalStorage()
   },[])
   console.log("User Local Storage:", userLocalStorage)
+
+
+
+  const testCookie = async () => {
+    await fetch(`${import.meta.env.VITE_API_URL}/set-test`, {
+      credentials: "include",
+    });
+
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/get-test`, {
+      credentials: "include",
+    });
+
+    const data = await res.json();
+    setCookieData(data); // ✅ show result in UI
+  };
   return (
     <div>
       <h1>Home</h1>
+
+      <div className="m-auto max-w-md mt-12 border-2 border-gray-300 rounded-md p-4">
+      <h1 className="text-xl font-bold mb-4">Test Cookies</h1>
+      <button
+        className="p-2 bg-blue-500 text-white rounded-md"
+        onClick={testCookie}
+      >
+        Run Cookie Test
+      </button>
+
+      {cookieData && (
+        <div className="mt-4 p-2 border-2 border-gray-300 rounded-md">
+          <h2 className="text-lg font-semibold">Server Response:</h2>
+          <pre className="text-sm text-gray-700">
+            {JSON.stringify(cookieData, null, 2)}
+          </pre>
+        </div>
+      )}
+    </div>
       <form className='m-auto max-w-md mt-12 border-2 border-gray-300 rounded-md p-4' onSubmit={handleSubmit}>
         <h1 className='text-2xl font-bold italic center mb-4'>Set Data Into Cookie</h1>
         <input className='w-full p-2 rounded-md border-2 border-gray-300' type="email" placeholder='Email' value={email} onChange={(e) => setEmail(e.target.value)} />
