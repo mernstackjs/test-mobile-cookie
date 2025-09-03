@@ -1,83 +1,96 @@
 import React, { useEffect, useState } from 'react'
 
 export default function Home() {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-const [email, setEmail] = useState("")
-const [password, setPassword] = useState("")
-const [user, setUser] = useState(()=>{
-  const user = localStorage.getItem("user")
-  return user ? JSON.parse(user) : null
-})
-
-
-const handleSubmit = (e) => {
-  e.preventDefault()
-  const user = {
-    id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
-    email,
-    createdAt: new Date().toISOString(),
-    role: "user"
- 
-  }
-localStorage.setItem("user", JSON.stringify(user))
-
-}
-
-  // Fetch data from API
-  const fetchData = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}`)
-      if (!response.ok) throw new Error('Failed to fetch data')
-      const result = await response.json()
-      setData(result)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [userCookie, setUserCookie] = useState(null)
+  const [userLocalStorage, setUserLocalStorage] = useState(()=>{
+    const user = localStorage.getItem("user")
+    return user ? JSON.parse(user) : null
+  })
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const user = {
+      email,
+      password,
     }
+try {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/set-user`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include", // This is crucial for cookies to work
+    body: JSON.stringify(user),
+  })
+  
+  if(!res.ok){
+    const errorData = await res.json()
+    console.log("Error:", errorData)
+    return
+  }
+  
+  const data = await res.json()
+  localStorage.setItem("user", JSON.stringify(data.user))
+  console.log("Success:", data)
+  
+  
+} catch (error) {
+  console.log("Network error:", error)
+}
   }
 
-  useEffect(() => {
-    fetchData()
-  }, [])
-
+  const fetchUser = async()=>{
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/get-user`, {
+      credentials: "include",
+    })
+    const data = await res.json()
+    setUserCookie(data.user)
+    console.log("User:", data)
+  }
+  const fetchUserLocalStorage = async()=>{
+    const user = localStorage.getItem("user")
+    setUserLocalStorage(user ? JSON.parse(user) : null)
+  }
+  useEffect(()=>{
+    fetchUser()
+    fetchUserLocalStorage()
+  },[])
+  console.log("User Local Storage:", userLocalStorage)
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Home</h1>
-
-      {loading && <p>Loading data...</p>}
-      {error && <p className="text-red-500">Error: {error}</p>}
-
-      {data && (
-        <>
-          <p>Message: {data.message}</p>
-          <p>User Agent: {data.userAgent}</p>
-        </>
-      )}
-
-  
-      <form className='border-2 border-gray-300 rounded-md p-4 m-auto max-w-md mt-12' onSubmit={handleSubmit}>
-        <input className='border-2 border-gray-300 rounded-md p-2 m-2 w-full' type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input className='border-2 border-gray-300 rounded-md p-2 m-2 w-full' type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <button className='border-2 bg-gray-500 text-white rounded-md p-2 m-2' type="submit">Submit</button>
+    <div>
+      <h1>Home</h1>
+      <form className='m-auto max-w-md mt-12 border-2 border-gray-300 rounded-md p-4' onSubmit={handleSubmit}>
+        <h1 className='text-2xl font-bold italic center mb-4'>Set Data Into Cookie</h1>
+        <input className='w-full p-2 rounded-md border-2 border-gray-300' type="email" placeholder='Email' value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input className='w-full p-2 rounded-md border-2 my-3 border-gray-300' type="password" placeholder='Password' value={password} onChange={(e) => setPassword(e.target.value)} />
+        <button className=' p-2 rounded-md border-2 border-gray-300' type='submit'>Submit</button>
       </form>
 
-{
-  user && (
-    <div className='border-2 border-gray-300 rounded-md p-4 m-auto max-w-md mt-12'>
-      <h1 className='text-2xl font-bold mb-4'>User</h1>
-      <p>Id: {user.id}</p>
-      <p className='text-gray-500'>Email: {user.email}</p>
-      <p className='text-gray-500'>Created At: {user.createdAt}</p>
-      <p className='text-gray-500'>Role: {user.role}</p>
-    </div>
-  )
-}
-   
+      {
+        userCookie && (
+          <div className='m-auto max-w-md mt-12 bg-green-300 rounded-md p-4'>
+        
+        <h1 className='text-2xl font-bold italic center mb-4'>User Information From Cookie</h1>
+        <p className='mb-2 italic text-sm text-gray-500' >{userCookie.id}</p>
+            <p className='text-sm text-gray-500'>Email: {userCookie.email}</p>
+            <p className='text-sm text-gray-500'>Password: {userCookie.password}</p>
+            <p className='text-sm text-gray-500'>Created At: {userCookie.createdAt}</p>
+            <p className='text-sm text-gray-500'>Role: {userCookie.role}</p>
+          </div>
+        )
+      }
+
+      {
+        userLocalStorage && (
+          <div className='m-auto max-w-md mt-12 border-2 bg-slate-700 text-white rounded-md p-4'>
+            <h1 className='text-2xl font-bold italic center mb-4'>User Info From Local Storage</h1>
+            <p className='mb-2 italic text-sm text-gray-500' >{userLocalStorage.id}</p>
+            <p className='text-sm text-gray-500'>Email: {userLocalStorage.email}</p>
+            <p className='text-sm text-gray-500'>Password: {userLocalStorage.password}</p>
+            <p className='text-sm text-gray-500'>Created At: {userLocalStorage.createdAt}</p>
+            <p className='text-sm text-gray-500'>Role: {userLocalStorage.role}</p>
+          </div>
+        )
+      }
     </div>
   )
 }
