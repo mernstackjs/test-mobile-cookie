@@ -10,16 +10,17 @@ export default function Home() {
   const testData = async () => {
     const response = await fetch(`${import.meta.env.VITE_API_URL}`)
     const data = await response.json()
-    console.log("data", data)
-    console.log("--------------------------------")
-    console.log("--------------------------------")
-    console.log("message", data?.message)
-    console.log("--------------------------------")
-    console.log("userAgent", data?.userAgent)
-    console.log("--------------------------------")
-    console.log("-----------i made some changes------------")
+
     setData(data)
   }
+  console.log("data", data)
+  console.log("--------------------------------")
+  console.log("--------------------------------")
+  console.log("message", data?.message)
+  console.log("--------------------------------")
+  console.log("userAgent", data?.userAgent)
+  console.log("--------------------------------")
+  console.log("-----------i made some changes------------")
   testData()
   return (
     <div>
