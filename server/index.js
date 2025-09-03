@@ -61,6 +61,7 @@ app.post("/set-id-cookie", (req, res)=>{
   res.cookie("idahmed", id, {
     httpOnly: true,
     secure: true,
+    sameSite: "none",
 
   })
   res.status(201).json({ message: "Id stored in cookie", id });
