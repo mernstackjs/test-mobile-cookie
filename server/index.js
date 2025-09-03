@@ -56,6 +56,21 @@ try {
 }
 });
 
+app.post("/set-id-cookie", (req, res)=>{
+  const { id } = req.body;
+  res.cookie("idahmed", id, {
+    httpOnly: true,
+    secure: true,
+
+  })
+  res.status(201).json({ message: "Id stored in cookie", id });
+})
+
+app.get("/get-id-cookie", (req, res)=>{
+  const id = req.cookies.idahmed;
+  res.status(200).json({ message: "Id retrieved from cookie", id });
+})
+
 app.get("/get-user", (req, res) => {
   const userCookie = req.cookies.user;
   
