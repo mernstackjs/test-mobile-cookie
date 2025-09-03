@@ -7,8 +7,10 @@ const app = express()
 const port = process.env.PORT
 
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: process.env.CLIENT_URL || "http://localhost:5173",
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
 }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -37,7 +39,14 @@ try {
     role: "user",
   };
 
-  res.cookie("user", JSON.stringify(user));
+  // Set cookie with proper settings for production
+  res.cookie("user", JSON.stringify(user), {
+    httpOnly: false, // Allow client-side access
+    secure: process.env.NODE_ENV === 'production', // HTTPS in production
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Cross-site in production
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    path: '/', // Available on all paths
+  });
 
   res.status(201).json({ message: "User stored in cookie", user });
 
@@ -48,9 +57,22 @@ try {
 
 app.get("/get-user", (req, res) => {
   const userCookie = req.cookies.user;
+  
+  // Debug logging for production
+  console.log("All cookies:", req.cookies);
+  console.log("User cookie:", userCookie);
+  console.log("Request headers:", req.headers);
 
   if (!userCookie) {
-    return res.status(404).json({ message: "No user cookie found" });
+    return res.status(404).json({ 
+      message: "No user cookie found",
+      debug: {
+        allCookies: req.cookies,
+        userAgent: req.headers['user-agent'],
+        origin: req.headers.origin,
+        referer: req.headers.referer
+      }
+    });
   }
 
   try {
