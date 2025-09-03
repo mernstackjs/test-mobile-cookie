@@ -13,14 +13,6 @@ export default function Home() {
 
     setData(data)
   }
-  console.log("data", data)
-  console.log("--------------------------------")
-  console.log("--------------------------------")
-  console.log("message", data?.message)
-  console.log("--------------------------------")
-  console.log("userAgent", data?.userAgent)
-  console.log("--------------------------------")
-  console.log("-----------i made some changes------------")
   testData()
   return (
     <div>
