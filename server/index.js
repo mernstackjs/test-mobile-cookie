@@ -44,7 +44,6 @@ app.post("/set-user", (req, res) => {
       httpOnly: true,            // ✅ safer + consistent on mobile
       secure: true,              // ✅ required for HTTPS
       sameSite: "none",          // ✅ required for cross-site cookies
-      domain: ".onrender.com",   // ✅ share cookie across client + server
       path: "/",                 // ✅ required for Safari
       maxAge: 24 * 60 * 60 * 1000,
     });
@@ -61,8 +60,7 @@ app.post("/set-id-cookie", (req, res)=>{
   res.cookie("idahmed", id, {
     httpOnly: true,              // prevent JS access (good for security)
     secure: true,                // HTTPS only
-    sameSite: "none",            // required for cross-site cookies
-    domain: ".onrender.com",     // ✅ make cookie valid across client + server
+    sameSite: "none",            // required for cross-site cookies    // ✅ make cookie valid across client + server
     path: "/",                   // ✅ required for Safari
     maxAge: 24 * 60 * 60 * 1000, // 1 day
   });
