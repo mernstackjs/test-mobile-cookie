@@ -41,13 +41,13 @@ try {
 
   // Set cookie with mobile-friendly settings
   res.cookie("user", JSON.stringify(user), {
-    httpOnly: false, // Allow client-side access
-    secure: process.env.NODE_ENV === 'production', // HTTPS in production
-    sameSite: 'lax', // More compatible with mobile browsers
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    path: '/', // Available on all paths
-    domain: process.env.NODE_ENV === 'production' ? undefined : undefined, // Let browser handle domain
+    httpOnly: false, // allow client-side JS to read it
+    secure: true,    // required on HTTPS
+    sameSite: "none", // required for cross-site cookies
+    maxAge: 24 * 60 * 60 * 1000,
+    path: "/",
   });
+  
 
   res.status(201).json({ message: "User stored in cookie", user });
 
@@ -96,39 +96,11 @@ app.get("/get-user", (req, res) => {
   }
 });
 
-app.get("/test-cookie", (req, res) => {
-  const userCookie = req.cookies.user;
 
-  if (!userCookie) {
-    return res.status(404).json({ message: "No user cookie found" });
-  }
 
-  try {
-    const user = JSON.parse(userCookie);
-    res.status(200).json({ message: "Cookie test successful", user });
-  } catch (err) {
-    res.status(400).json({ message: "Invalid cookie data" });
-  }
-});
 
-// Mobile-specific debugging endpoint
-app.get("/mobile-debug", (req, res) => {
-  const userAgent = req.headers['user-agent'] || '';
-  const isMobile = /Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-  
-  res.json({
-    isMobile: isMobile,
-    userAgent: userAgent,
-    allCookies: req.cookies,
-    headers: {
-      origin: req.headers.origin,
-      referer: req.headers.referer,
-      accept: req.headers.accept,
-      cookie: req.headers.cookie
-    },
-    timestamp: new Date().toISOString()
-  });
-});
+
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)
